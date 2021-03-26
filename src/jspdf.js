@@ -7,6 +7,7 @@ import { globalObject } from "./libs/globalObject.js";
 import { RGBColor } from "./libs/rgbcolor.js";
 import { btoa } from "./libs/AtobBtoa.js";
 import { console } from "./libs/console.js";
+import { PDFSecurity } from "./libs/pdfsecurity.js";
 
 /**
  * jsPDF's Internal PubSub Implementation.
@@ -186,6 +187,10 @@ function TilingPattern(boundingBox, xStep, yStep, gState, matrix) {
  * @param {number} [options.precision=16] Precision of the element-positions.
  * @param {number} [options.userUnit=1.0] Not to be confused with the base unit. Please inform yourself before you use it.
  * @param {string[]} [options.hotfixes] An array of strings to enable hotfixes such as correct pixel scaling.
+ * @param {Object} [options.encryption]
+ * @param {string} [options.encryption.userPassword] Password for the user bound by the given permissions list.
+ * @param {string} [options.encryption.ownerPassword] Both userPassword and ownerPassword should be set for proper authentication.
+ * @param {string[]} [options.encryption.userPermissions] Array of permissions "print", "modify", "copy", "annot-forms", accessible by the user.
  * @param {number|"smart"} [options.floatPrecision=16]
  * @returns {jsPDF} jsPDF-instance
  * @description
@@ -211,6 +216,7 @@ function jsPDF(options) {
   var precision;
   var floatPrecision = 16;
   var defaultPathOperation = "S";
+  var encryptionOptions = null;
 
   options = options || {};
 
@@ -219,6 +225,13 @@ function jsPDF(options) {
     unit = options.unit || unit;
     format = options.format || format;
     compressPdf = options.compress || options.compressPdf || compressPdf;
+    encryptionOptions = options.encryption || null;
+    if (encryptionOptions !== null) {
+      encryptionOptions.userPassword = encryptionOptions.userPassword || "";
+      encryptionOptions.ownerPassword = encryptionOptions.ownerPassword || "";
+      encryptionOptions.userPermissions =
+        encryptionOptions.userPermissions || [];
+    }
     userUnit =
       typeof options.userUnit === "number" ? Math.abs(options.userUnit) : 1.0;
     if (typeof options.precision !== "undefined") {
@@ -344,6 +357,36 @@ function jsPDF(options) {
     defaultPathOperation = "S";
     apiMode = ApiMode.COMPAT;
   }
+
+  /**
+   * @function combineFontStyleAndFontWeight
+   * @param {string} fontStyle Fontstyle or variant. Example: "italic".
+   * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
+   * @returns {string}
+   * @private
+   */
+  var combineFontStyleAndFontWeight = function(fontStyle, fontWeight) {
+    if (
+      (fontStyle == "bold" && fontWeight == "normal") ||
+      (fontStyle == "bold" && fontWeight == 400) ||
+      (fontStyle == "normal" && fontWeight == "italic") ||
+      (fontStyle == "bold" && fontWeight == "italic")
+    ) {
+      throw new Error("Invalid Combination of fontweight and fontstyle");
+    }
+    if (fontWeight && fontStyle !== fontWeight) {
+      //if fontstyle is normal and fontweight is normal too no need to append the font-weight
+      fontStyle =
+        fontWeight == 400
+          ? fontStyle == "italic"
+            ? "italic"
+            : "normal"
+          : fontWeight == 700 && fontStyle !== "italic"
+          ? "bold"
+          : fontStyle + "" + fontWeight;
+    }
+    return fontStyle;
+  };
 
   /**
    * @callback ApiSwitchBody
@@ -545,6 +588,15 @@ function jsPDF(options) {
           return "ABCDEF0123456789".charAt(Math.floor(Math.random() * 16));
         })
         .join("");
+    }
+
+    if (encryptionOptions !== null) {
+      encryption = new PDFSecurity(
+        encryptionOptions.userPermissions,
+        encryptionOptions.userPassword,
+        encryptionOptions.ownerPassword,
+        fileId
+      );
     }
     return fileId;
   });
@@ -1710,6 +1762,18 @@ function jsPDF(options) {
     var alreadyAppliedFilters = options.alreadyAppliedFilters || [];
     var addLength1 = options.addLength1 || false;
     var valueOfLength1 = data.length;
+    var objectId = options.objectId;
+    var encryptor = function(data) {
+      return data;
+    };
+    if (encryptionOptions !== null && typeof objectId == "undefined") {
+      throw new Error(
+        "ObjectId must be passed to putStream for file encryption"
+      );
+    }
+    if (encryptionOptions !== null) {
+      encryptor = encryption.encryptor(objectId, 0);
+    }
 
     var processedData = {};
     if (filters === true) {
@@ -1778,7 +1842,7 @@ function jsPDF(options) {
     out(">>");
     if (processedData.data.length !== 0) {
       out("stream");
-      out(processedData.data);
+      out(encryptor(processedData.data));
       out("endstream");
     }
   });
@@ -1884,7 +1948,8 @@ function jsPDF(options) {
     newObjectDeferredBegin(pageContentsObjId, true);
     putStream({
       data: pageContent,
-      filters: getFilters()
+      filters: getFilters(),
+      objectId: pageContentsObjId
     });
     out("endobj");
     return pageObjectNumber;
@@ -1933,7 +1998,7 @@ function jsPDF(options) {
 
   var putFont = function(font) {
     var pdfEscapeWithNeededParanthesis = function(text, flags) {
-      var addParanthesis = text.indexOf(" ") !== -1;
+      var addParanthesis = text.indexOf(" ") !== -1; // no space in string
       return addParanthesis
         ? "(" + pdfEscape(text, flags) + ")"
         : pdfEscape(text, flags);
@@ -2003,7 +2068,8 @@ function jsPDF(options) {
     var stream = xObject.pages[1].join("\n");
     putStream({
       data: stream,
-      additionalKeyValues: options
+      additionalKeyValues: options,
+      objectId: xObject.objectNumber
     });
     out("endobj");
   };
@@ -2084,7 +2150,8 @@ function jsPDF(options) {
     putStream({
       data: stream,
       additionalKeyValues: options,
-      alreadyAppliedFilters: ["/ASCIIHexDecode"]
+      alreadyAppliedFilters: ["/ASCIIHexDecode"],
+      objectId: funcObjectNumber
     });
     out("endobj");
 
@@ -2157,7 +2224,8 @@ function jsPDF(options) {
 
     putStream({
       data: pattern.stream,
-      additionalKeyValues: options
+      additionalKeyValues: options,
+      objectId: pattern.objectNumber
     });
     out("endobj");
   };
@@ -2221,6 +2289,19 @@ function jsPDF(options) {
     // Loop through images, or other data objects
     events.publish("putXobjectDict");
     out(">>");
+  };
+
+  var putEncryptionDict = function() {
+    encryption.oid = newObject();
+    out("<<");
+    out("/Filter /Standard");
+    out("/V " + encryption.v);
+    out("/R " + encryption.r);
+    out("/U <" + encryption.toHexString(encryption.U) + ">");
+    out("/O <" + encryption.toHexString(encryption.O) + ">");
+    out("/P " + encryption.P);
+    out(">>");
+    out("endobj");
   };
 
   var putFontDict = function() {
@@ -2772,9 +2853,15 @@ function jsPDF(options) {
   };
 
   var putInfo = (API.__private__.putInfo = function() {
-    newObject();
+    var objectId = newObject();
+    var encryptor = function(data) {
+      return data;
+    };
+    if (encryptionOptions !== null) {
+      encryptor = encryption.encryptor(objectId, 0);
+    }
     out("<<");
-    out("/Producer (jsPDF " + jsPDF.version + ")");
+    out("/Producer (" + pdfEscape(encryptor("jsPDF " + jsPDF.version)) + ")");
     for (var key in documentProperties) {
       if (documentProperties.hasOwnProperty(key) && documentProperties[key]) {
         out(
@@ -2782,12 +2869,12 @@ function jsPDF(options) {
             key.substr(0, 1).toUpperCase() +
             key.substr(1) +
             " (" +
-            pdfEscape(documentProperties[key]) +
+            pdfEscape(encryptor(documentProperties[key])) +
             ")"
         );
       }
     }
-    out("/CreationDate (" + creationDate + ")");
+    out("/CreationDate (" + pdfEscape(encryptor(creationDate)) + ")");
     out(">>");
     out("endobj");
   });
@@ -2858,8 +2945,12 @@ function jsPDF(options) {
     out("trailer");
     out("<<");
     out("/Size " + (objectNumber + 1));
+    // Root and Info must be the last and second last objects written respectively
     out("/Root " + objectNumber + " 0 R");
     out("/Info " + (objectNumber - 1) + " 0 R");
+    if (encryptionOptions !== null) {
+      out("/Encrypt " + encryption.oid + " 0 R");
+    }
     out("/ID [ <" + fileId + "> <" + fileId + "> ]");
     out(">>");
   });
@@ -2899,6 +2990,7 @@ function jsPDF(options) {
     putPages();
     putAdditionalObjects();
     putResources();
+    if (encryptionOptions !== null) putEncryptionDict();
     putInfo();
     putCatalog();
 
@@ -2925,12 +3017,22 @@ function jsPDF(options) {
    *
    * If `type` argument is undefined, output is raw body of resulting PDF returned as a string.
    *
-   * @param {string} type A string identifying one of the possible output types. Possible values are 'arraybuffer', 'blob', 'bloburi'/'bloburl', 'datauristring'/'dataurlstring', 'datauri'/'dataurl', 'dataurlnewwindow', 'pdfobjectnewwindow', 'pdfjsnewwindow'.
-   * @param {Object} options An object providing some additional signalling to PDF generator. Possible options are 'filename'.
-   *
+   * @param {string} type A string identifying one of the possible output types.<br/>
+   *                      Possible values are: <br/>
+   *                          'arraybuffer' -> (ArrayBuffer)<br/>
+   *                          'blob' -> (Blob)<br/>
+   *                          'bloburi'/'bloburl' -> (string)<br/>
+   *                          'datauristring'/'dataurlstring' -> (string)<br/>
+   *                          'datauri'/'dataurl' -> (undefined) -> change location to generated datauristring/dataurlstring<br/>
+   *                          'dataurlnewwindow' -> (window | null | undefined) throws error if global isn't a window object(node)<br/>
+   *                          'pdfobjectnewwindow' -> (window | null) throws error if global isn't a window object(node)<br/>
+   *                          'pdfjsnewwindow' -> (wind | null)
+   * @param {Object|string} options An object providing some additional signalling to PDF generator.<br/>
+   *                                Possible options are 'filename'.<br/>
+   *                                A string can be passed instead of {filename:string} and defaults to 'generated.pdf'
    * @function
    * @instance
-   * @returns {jsPDF}
+   * @returns {string|window|ArrayBuffer|Blob|jsPDF|null|undefined}
    * @memberof jsPDF#
    * @name output
    */
@@ -3028,7 +3130,9 @@ function jsPDF(options) {
             "<style>html, body { padding: 0; margin: 0; } iframe { width: 100%; height: 100%; border: 0;}  </style>" +
             '<body><iframe id="pdfViewer" src="' +
             pdfJsUrl +
-            '?file=&downloadName=' + options.filename + '" width="500px" height="400px" />' +
+            "?file=&downloadName=" +
+            options.filename +
+            '" width="500px" height="400px" />' +
             "</body></html>";
           var PDFjsNewWindow = globalObject.open();
 
@@ -3132,8 +3236,18 @@ function jsPDF(options) {
       throw new Error("Invalid unit: " + unit);
   }
 
+  var encryption = null;
   setCreationDate();
   setFileId();
+
+  var getEncryptor = function(objectId) {
+    if (encryptionOptions !== null) {
+      return encryption.encryptor(objectId, 0);
+    }
+    return function(data) {
+      return data;
+    };
+  };
 
   //---------------------------------------
   // Public API
@@ -3531,7 +3645,9 @@ function jsPDF(options) {
       if (typeof text === "string") {
         text = scope.splitTextToSize(text, maxWidth);
       } else if (Object.prototype.toString.call(text) === "[object Array]") {
-        text = scope.splitTextToSize(text.join(" "), maxWidth);
+        text = text.reduce(function(acc, textLine) {
+          return acc.concat(scope.splitTextToSize(textLine, maxWidth));
+        }, []);
       }
     }
 
@@ -3672,7 +3788,8 @@ function jsPDF(options) {
     maxWidth = options.maxWidth || 0;
 
     var lineWidths;
-    flags = {};
+    flags = Object.assign({ autoencode: true, noBOM: true }, options.flags);
+
     var wordSpacingPerLine = [];
 
     if (Object.prototype.toString.call(text) === "[object Array]") {
@@ -4713,13 +4830,17 @@ function jsPDF(options) {
    *
    * @param {string} fontName Font name or family. Example: "times".
    * @param {string} fontStyle Font style or variant. Example: "italic".
+   * @param {number | string} fontWeight Weight of the Font. Example: "normal" | 400
    * @function
    * @instance
    * @returns {jsPDF}
    * @memberof jsPDF#
    * @name setFont
    */
-  API.setFont = function(fontName, fontStyle) {
+  API.setFont = function(fontName, fontStyle, fontWeight) {
+    if (fontWeight) {
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+    }
     activeFontKey = getFont(fontName, fontStyle, {
       disableWarning: false
     });
@@ -4774,6 +4895,7 @@ function jsPDF(options) {
    * @param {string} postScriptName PDF specification full name for the font.
    * @param {string} id PDF-document-instance-specific label assinged to the font.
    * @param {string} fontStyle Style of the Font.
+   * @param {number | string} fontWeight Weight of the Font.
    * @param {Object} encoding Encoding_name-to-Font_metrics_object mapping.
    * @function
    * @instance
@@ -4781,7 +4903,25 @@ function jsPDF(options) {
    * @name addFont
    * @returns {string} fontId
    */
-  API.addFont = function(postScriptName, fontName, fontStyle, encoding) {
+  API.addFont = function(
+    postScriptName,
+    fontName,
+    fontStyle,
+    fontWeight,
+    encoding
+  ) {
+    var encodingOptions = [
+      "StandardEncoding",
+      "MacRomanEncoding",
+      "Identity-H",
+      "WinAnsiEncoding"
+    ];
+    if (arguments[3] && encodingOptions.indexOf(arguments[3]) !== -1) {
+      //IE 11 fix
+      encoding = arguments[3];
+    } else if (arguments[3] && encodingOptions.indexOf(arguments[3]) == -1) {
+      fontStyle = combineFontStyleAndFontWeight(fontStyle, fontWeight);
+    }
     encoding = encoding || "Identity-H";
     return addFont.call(this, postScriptName, fontName, fontStyle, encoding);
   };
@@ -5820,6 +5960,9 @@ function jsPDF(options) {
         setPageHeight(currentPage, value);
       }
     },
+    encryptionOptions: encryptionOptions,
+    encryption: encryption,
+    getEncryptor: getEncryptor,
     output: output,
     getNumberOfPages: getNumberOfPages,
     pages: pages,

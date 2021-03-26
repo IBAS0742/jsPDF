@@ -1,414 +1,302 @@
 var configuration = {
+  license: {
+    name: "License",
+    folder: "",
+    description: "MIT License Header",
+    deps: []
+  },
 
-    'license': {
-        name: 'License',
-        folder: '',
-        description: 'MIT License Header',
-        deps: []
-    },
+  polyfill: {
+    name: "Polyfill",
+    folder: "libs",
+    description: "Adds missing functions to older browsers",
+    deps: []
+  },
 
+  jspdf: {
+    name: "Core",
+    folder: "",
+    description: "",
+    deps: ["license", "rgbcolor"]
+  },
 
-    'polyfill': {
-        name: 'Polyfill',
-        folder: 'libs',
-        description: 'Adds missing functions to older browsers',
-        deps: []
-    },
+  rgbcolor: {
+    name: "rgbcolor",
+    folder: "libs",
+    description: "RGBcolor",
+    deps: []
+  },
 
-    'jspdf': {
-        name: 'Core',
-        folder: '',
-        description: '',
-        deps: [
-            'license',
-            'adler32cs',
-            'rgbcolor'
-        ]
-    },
+  standard_fonts_metrics: {
+    name: "Standard Font Metrics Plugin",
+    folder: "modules",
+    description: "Adds the Font metrics of the 14 Standard Fonts",
+    deps: ["jspdf"]
+  },
 
-    'adler32cs': {
-        name: 'Adler32',
-        folder: 'libs',
-        description: 'Adler32',
-        deps: []
-    },
+  split_text_to_size: {
+    name: "Split text to size Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf", "standard_fonts_metrics"]
+  },
 
-    'rgbcolor': {
-        name: 'rgbcolor',
-        folder: 'libs',
-        description: 'RGBcolor',
-        deps: []
-    },
+  acroform: {
+    name: "AcroForm Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf", "annotations"]
+  },
 
-    'standard_fonts_metrics': {
-        name: 'Standard Font Metrics Plugin',
-        folder: 'modules',
-        description: 'Adds the Font metrics of the 14 Standard Fonts',
-        deps: [
-            'jspdf'
-        ]
-    },
+  addimage: {
+    name: "AddImage Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf"]
+  },
 
-    'split_text_to_size': {
-        name: 'Split text to size Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'standard_fonts_metrics'
-        ]
-    },
+  jpeg_support: {
+    name: "JPEG Support",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf", "modules/addimage", "libs/JPEGEncoder"]
+  },
 
-    'acroform': {
-        name: 'AcroForm Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'annotations'
-        ]
-    },
+  JPEGEncoder: {
+    name: "JPEG Encoder",
+    folder: "libs",
+    description: "",
+    deps: []
+  },
 
-    'addimage': {
-        name: 'AddImage Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf'
-        ]
-    },
+  bmp_support: {
+    name: "BMP Support",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf", "jpeg_support", "BMPDecoder"]
+  },
 
-    'jpeg_support': {
-        name: 'JPEG Support',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'modules/addimage',
-            'libs/JPEGEncoder'
-        ]
-    },
+  BMPDecoder: {
+    name: "BMP Encoder",
+    folder: "libs",
+    description: "",
+    deps: []
+  },
 
-    'JPEGEncoder': {
-        name: 'JPEG Encoder',
-        folder: 'libs',
-        description: '',
-        deps: []
-    },
+  png: {
+    name: "PNG Encoder",
+    folder: "libs",
+    description: "",
+    deps: []
+  },
+  zlib: {
+    name: "zlib",
+    folder: "libs",
+    description: "",
+    deps: []
+  },
+  gif_support: {
+    name: "Gif Support",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf", "jpeg_support", "omggif"]
+  },
+  omggif: {
+    name: "omggif",
+    folder: "libs",
+    description: "",
+    deps: []
+  },
 
-    'bmp_support': {
-        name: 'BMP Support',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'jpeg_support',
-            'BMPDecoder'
-        ]
-    },
+  webp_support: {
+    name: "WebP Support",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf", "jpeg_support", "WebPDecoder"]
+  },
+  WebPDecoder: {
+    name: "WebPDecoder",
+    folder: "libs",
+    description: "",
+    deps: []
+  },
 
-    'BMPDecoder': {
-        name: 'BMP Encoder',
-        folder: 'libs',
-        description: '',
-        deps: []
-    },
+  annotations: {
+    name: "Annotations Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf", "standard_fonts_metrics", "split_text_to_size"]
+  },
 
-    'png_support': {
-        name: 'PNG Support',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'jpeg_support',
-            'Deflater',
-            'png',
-            'zlib'
-        ]
-    },
+  autoprint: {
+    name: "AutoPrint Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf"]
+  },
 
-    'png': {
-        name: 'PNG Encoder',
-        folder: 'libs',
-        description: '',
-        deps: []
-    },
-    'zlib': {
-        name: 'zlib',
-        folder: 'libs',
-        description: '',
-        deps: []
-    },
-    'Deflater': {
-        name: 'Deflater',
-        folder: 'libs',
-        description: '',
-        deps: []
-    },
-    'gif_support': {
-        name: 'Gif Support',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'jpeg_support',
-            'omggif'
-        ]
-    },
-    'omggif': {
-        name: 'omggif',
-        folder: 'libs',
-        description: '',
-        deps: []
-    },
+  cell: {
+    name: "cell Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf"]
+  },
 
-    'webp_support': {
-        name: 'WebP Support',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'jpeg_support',
-            'WebPDecoder'
-        ]
-    },
-    'WebPDecoder': {
-        name: 'WebPDecoder',
-        folder: 'libs',
-        description: '',
-        deps: []
-    },
+  filters: {
+    name: "Filter Plugin",
+    description: "",
+    deps: ["jspdf"]
+  },
 
-    'annotations': {
-        name: 'Annotations Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'standard_fonts_metrics',
-            'split_text_to_size'
-        ]
-    },
+  fileloading: {
+    name: "FileLoading Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf"]
+  },
 
-    'autoprint': {
-        name: 'AutoPrint Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf'
-        ]
-    },
+  outline: {
+    name: "Outline Plugin",
+    folder: "modules",
+    deps: ["jspdf"]
+  },
 
-    'cell': {
-        name: 'cell Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf'
-        ]
-    },
+  javascript: {
+    name: "Javascript Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf"]
+  },
+  canvas: {
+    name: "Canvas Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf"]
+  },
 
-    'filters': {
-        name: 'Filter Plugin',
-        description: '',
-        deps: [
-            'jspdf'
-        ]
-    },
+  context2d: {
+    name: "Context2D Plugin",
+    folder: "modules",
+    deps: [
+      "jspdf",
+      "canvas",
+      "addimage",
+      "standard_fonts_metrics",
+      "split_text_to_size",
+      "rgbcolor"
+    ]
+  },
 
-    'fileloading': {
-        name: 'FileLoading Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf'
-        ]
-    },
+  total_pages: {
+    name: "TotalPages Plugin",
+    folder: "modules",
+    deps: ["jspdf"]
+  },
 
-    'outline': {
-        name: 'Outline Plugin',
-        folder: 'modules',
-        deps: [
-            'jspdf'
-        ]
-    },
+  setlanguage: {
+    name: "Language Tag Plugin",
+    folder: "modules",
+    deps: ["jspdf"]
+  },
 
-    'javascript': {
-        name: 'Javascript Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf'
-        ]
-    },
-    'canvas': {
-        name: 'Canvas Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf'
-        ]
-    },
+  svg: {
+    name: "SVG Plugin",
+    folder: "modules",
+    deps: ["jspdf"]
+  },
 
-    'context2d': {
-        name: 'Context2D Plugin',
-        folder: 'modules',
-        deps: [
-            'jspdf',
-            'canvas',
-            'addimage',
-            'standard_fonts_metrics',
-            'split_text_to_size',
-            'rgbcolor'
-        ]
-    },
+  viewerpreferences: {
+    name: "ViewerPreferences Plugin",
+    folder: "modules",
+    deps: ["jspdf"]
+  },
 
-    'total_pages': {
-        name: 'TotalPages Plugin',
-        folder: 'modules',
-        deps: [
-            'jspdf'
-        ]
-    },
+  html: {
+    name: "HTML Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf", "context2d", "annotations"]
+  },
 
-    'setlanguage': {
-        name: 'Language Tag Plugin',
-        folder: 'modules',
-        deps: [
-            'jspdf'
-        ]
-    },
+  ttfsupport: {
+    name: "TTFFont Support",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf", "vfs", "ttffont"]
+  },
+  ttffont: {
+    name: "TTFFont Class",
+    folder: "libs",
+    description: "",
+    deps: []
+  },
 
-    'svg': {
-        name: 'SVG Plugin',
-        folder: 'modules',
-        deps: [
-            'jspdf'
-        ]
-    },
+  "modules/utf8": {
+    name: "UTF8 Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf", "ttfsupport", "bidiEngine"]
+  },
 
-    'viewerpreferences': {
-        name: 'ViewerPreferences Plugin',
-        folder: 'modules',
-        deps: [
-            'jspdf'
-        ]
-    },
+  bidiEngine: {
+    name: "BiDiEngine",
+    folder: "libs",
+    description: "",
+    deps: []
+  },
 
-    'html': {
-        name: 'HTML Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'context2d',
-            'annotations',
-        ]
-    },
+  arabic: {
+    name: "Arabic Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["utf8"]
+  },
 
-    'ttfsupport': {
-        name: 'TTFFont Support',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'vfs',
-            'ttffont'
-        ]
-    },
-    'ttffont': {
-        name: 'TTFFont Class',
-        folder: 'libs',
-        description: '',
-        deps: []
-    },
+  vfs: {
+    name: "virtual FileSystem Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf"]
+  },
 
-    'modules/utf8': {
-        name: 'UTF8 Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf',
-            'ttfsupport',
-            'bidiEngine'
-        ]
-    },
+  xmp_metadata: {
+    name: "XMP Metadata Plugin",
+    folder: "modules",
+    description: "",
+    deps: ["jspdf"]
+  },
 
-    'bidiEngine': {
-        name: 'BiDiEngine',
-        folder: 'libs',
-        description: '',
-        deps: []
-    },
+  FileSaver: {
+    name: "FileSaver",
+    folder: "libs",
+    description: "",
+    deps: ["Blob"]
+  },
 
-    'arabic': {
-        name: 'Arabic Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'utf8'
-        ]
-    },
-
-    'vfs': {
-        name: 'virtual FileSystem Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf'
-        ]
-    },
-
-    'xmp_metadata': {
-        name: 'XMP Metadata Plugin',
-        folder: 'modules',
-        description: '',
-        deps: [
-            'jspdf'
-        ]
-    },
-
-    'FileSaver': {
-        name: 'FileSaver',
-        folder: 'libs',
-        description: '',
-        deps: [
-            'Blob'
-        ]
-    },
-
-    'Blob': {
-        name: 'Blob',
-        folder: 'libs',
-        description: '',
-        deps: []
-    },
-    'from_html': {
-        name: 'FromHTML Plugin',
-        folder: 'deprecated',
-        description: 'Deprecated',
-        deps: [
-            'jspdf',
-            'cell'
-        ]
-    },
-
-    'addhtml': {
-        name: 'AddHTML Plugin',
-        folder: 'deprecated',
-        description: 'Deprecated',
-        deps: [
-            'jspdf'
-        ]
-    },
-    'html2pdf': {
-        name: 'html2pdf Plugin',
-        folder: 'deprecated',
-        description: 'Deprecated',
-        deps: [
-            'jspdf'
-        ]
-    }
-}
+  Blob: {
+    name: "Blob",
+    folder: "libs",
+    description: "",
+    deps: []
+  },
+  md5: {
+    name: "md5",
+    folder: "libs",
+    description: "Implementation of MD5 hashing",
+    deps: []
+  },
+  rc4: {
+    name: "rc4",
+    folder: "libs",
+    description: "Implementation of RC4 encryption",
+    deps: []
+  },
+  pdfsecurity: {
+    name: "pdfsecurity",
+    folder: "libs",
+    description: "",
+    deps: ["md5", "rc4"]
+  }
+};
 
 module.exports = configuration;

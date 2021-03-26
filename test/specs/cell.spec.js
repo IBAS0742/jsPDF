@@ -26,6 +26,12 @@ describe("Module: Cell", () => {
     expect(
       doc.getTextDimensions("Octocat loves jsPDF", { maxWidth: 100 }).w
     ).toEqual(96.64000000000001);
+    expect(
+      doc.getTextDimensions("Octocat loves jsPDF\njsPDF loves Octocat", { maxWidth: 100 }).h
+    ).toEqual(71.19999999999999);
+    expect(
+      doc.getTextDimensions("Octocat loves jsPDF\njsPDF loves Octocat", { maxWidth: 100 }).w
+    ).toEqual(96.64000000000001);
     expect(doc.getTextDimensions("").w).toEqual(0);
     expect(doc.getTextDimensions("").h).toEqual(0);
     expect(doc.getTextDimensions([""]).w).toEqual(0);
@@ -65,16 +71,18 @@ describe("Module: Cell", () => {
     }));
   }
 
-  var header = createHeaders([
+  var headerNames = [
     "coin",
     "game_group",
     "game_name",
     "game_version",
     "machine",
     "vlt"
-  ]);
+  ];
 
-  it("table", () => {
+  var header = createHeaders(headerNames);
+
+  it("table with CellConfig[]", () => {
     var doc = new jsPDF({
       putOnlyUsedFonts: true,
       orientation: "landscape",
@@ -82,6 +90,26 @@ describe("Module: Cell", () => {
     });
     doc.table(1, 1, generateData(100), header);
     comparePdf(doc.output(), "table.pdf");
+  });
+
+  it("table with string[] and without autoSize", () => {
+    var doc = new jsPDF({
+      putOnlyUsedFonts: true,
+      orientation: "landscape",
+      floatPrecision: 2
+    });
+    doc.table(1, 1, generateData(100), headerNames);
+    comparePdf(doc.output(), "table-autoSize-headerNames.pdf");
+  });
+
+  it("table with string[] and autoSize", () => {
+    var doc = new jsPDF({
+      putOnlyUsedFonts: true,
+      orientation: "landscape",
+      floatPrecision: 2
+    });
+    doc.table(1, 1, generateData(100), headerNames, { autoSize: true });
+    comparePdf(doc.output(), "table-autoSize-headerNames.pdf");
   });
 
   it("table-autoSize", () => {

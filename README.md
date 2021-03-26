@@ -29,10 +29,10 @@ yarn add jspdf
 Alternatively, load it from a CDN:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.1.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
 ```
 
-Or always get latest version via [unpkg](https://unpkg.com/#/)
+Or always get latest version via [unpkg](https://unpkg.com/browse/jspdf/)
 
 ```html
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
@@ -178,14 +178,14 @@ Alternatively, you can load the prebundled polyfill file. This is not recommende
 loading polyfills multiple times. Might still be nifty for small applications or quick POCs.
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.1.1/polyfills.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/polyfills.umd.js"></script>
 ```
 
 ## Use of Unicode Characters / UTF-8:
 
 The 14 standard fonts in PDF are limited to the ASCII-codepage. If you want to use UTF-8 you have to integrate a
 custom font, which provides the needed glyphs. jsPDF supports .ttf-files. So if you want to have for example
-chinese text in your pdf, your font has to have the necessary chinese glyphs. So check if your font supports
+Chinese text in your pdf, your font has to have the necessary Chinese glyphs. So, check if your font supports
 the wanted glyphs or else it will show garbled characters instead of the right text.
 
 To add the font to jsPDF use our fontconverter in
@@ -194,7 +194,7 @@ The fontconverter will create a js-file with the content of the provided ttf-fil
 and additional code for jsPDF. You just have to add this generated js-File to your project.
 You are then ready to go to use setFont-method in your code and write your UTF-8 encoded text.
 
-Alternatively you can just load the content of the \*.ttf file as binary string using `fetch` or `XMLHttpRequest` and
+Alternatively you can just load the content of the \*.ttf file as a binary string using `fetch` or `XMLHttpRequest` and
 add the font to the PDF file:
 
 ```js
@@ -205,6 +205,7 @@ const myFont = ... // load the *.ttf font file as binary string
 // add the font to jsPDF
 doc.addFileToVFS("MyFont.ttf", myFont);
 doc.addFont("MyFont.ttf", "MyFont", "normal");
+doc.setFont("MyFont");
 ```
 
 ## Advanced Functionality
@@ -215,7 +216,7 @@ of them are API breaking, which is why there is an API-switch between two API mo
 - In "compat" API mode, jsPDF has the same API as MrRio's original version, which means full compatibility with plugins.
   However, some advanced features like transformation matrices and patterns won't work. This is the default mode.
 - In "advanced" API mode, jsPDF has the API you're used from the yWorks-fork version. This means the availability of
-  all advanced features like patterns, FormObjects and transformation matrices.
+  all advanced features like patterns, FormObjects, and transformation matrices.
 
 You can switch between the two modes by calling
 
@@ -236,7 +237,7 @@ JsPDF will automatically switch back to the original API mode after the callback
 Please check if your question is already handled at Stackoverflow <https://stackoverflow.com/questions/tagged/jspdf>.
 Feel free to ask a question there with the tag `jspdf`.
 
-Feature requests, bug reports etc. are very welcome as issues. Note that bug reports should follow these guidelines:
+Feature requests, bug reports, etc. are very welcome as issues. Note that bug reports should follow these guidelines:
 
 - A bug should be reported as an [mcve](https://stackoverflow.com/help/mcve)
 - Make sure code is properly indented and [formatted](https://help.github.com/articles/basic-writing-and-formatting-syntax/#quoting-code) (Use ``` around code blocks)
@@ -247,7 +248,7 @@ Feature requests, bug reports etc. are very welcome as issues. Note that bug rep
 
 jsPDF cannot live without help from the community! If you think a feature is missing or you found a bug, please consider
 if you can spare one or two hours and prepare a pull request. If you're simply interested in this project and want to
-help, have a look at the open issues, especially those labelled with "bug".
+help, have a look at the open issues, especially those labeled with "bug".
 
 You can find information about building and testing jsPDF in the
 [contribution guide](https://github.com/MrRio/jsPDF/blob/master/CONTRIBUTING.md#pull-requests)

@@ -262,7 +262,8 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     putStream({
       data: image.data,
       additionalKeyValues: additionalKeyValues,
-      alreadyAppliedFilters: alreadyAppliedFilters
+      alreadyAppliedFilters: alreadyAppliedFilters,
+      objectId: image.objectId
     });
 
     out("endobj");
@@ -292,11 +293,12 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
 
     //Palette
     if (image.colorSpace === color_spaces.INDEXED) {
-      this.internal.newObject();
+      var objId = this.internal.newObject();
       //out('<< /Filter / ' + img['f'] +' /Length ' + img['pal'].length + '>>');
       //putStream(zlib.compress(img['pal']));
       putStream({
-        data: arrayBufferToBinaryString(new Uint8Array(image.palette))
+        data: arrayBufferToBinaryString(new Uint8Array(image.palette)),
+        objectId: objId
       });
       out("endobj");
     }
@@ -628,7 +630,7 @@ import { atob, btoa } from "../libs/AtobBtoa.js";
     var result = null;
 
     if (dataUrlParts.length === 2) {
-      var extractedInfo = /^data:(\w*\/\w*);*(charset=[\w=-]*)*;*$/.exec(
+      var extractedInfo = /^data:(\w*\/\w*);*(charset=(?!charset=)[\w=-]*)*;*$/.exec(
         dataUrlParts[0]
       );
       if (Array.isArray(extractedInfo)) {

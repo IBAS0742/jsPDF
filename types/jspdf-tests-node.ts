@@ -18,6 +18,17 @@ const {
   TilingPattern
 } = jspdf;
 
+function pubsub() {
+  const doc = new jsPDF();
+  const token = doc.internal.events.subscribe("topic", (a, b) => {}, true);
+  doc.internal.events.unsubscribe(token);
+  doc.internal.events.publish("topic", 1, "foo");
+  const topics = doc.internal.events.getTopics();
+  if (topics["topic"][token][1]) {
+    topics["topic"][token][0](1, "foo");
+  }
+}
+
 function classes() {
   new GState({});
   new TilingPattern([], 0, 0);
@@ -239,16 +250,6 @@ function test_images() {
     doc.output("datauri", { filename: "test.pdf" });
   };
   getImageFromUrl("thinking-monkey.jpg", createPDF);
-}
-
-function test_add_html() {
-  const pdf = new jsPDF("p", "pt", "a4");
-  pdf.addHTML(document.body, function() {
-    const string = pdf.output("datauristring");
-    document
-      .getElementsByClassName("preview-pane")[0]
-      .setAttribute("src", string);
-  });
 }
 
 function test_context2d_smiley() {
@@ -596,7 +597,8 @@ function test_addImage() {
     x: 0,
     y: 0,
     width: 100,
-    height: 100
+    height: 100,
+    compression: "FAST"
   });
 }
 
@@ -605,5 +607,35 @@ function test_loadFile() {
   doc.loadFile("../image.png");
   doc.loadFile("../image.png", false, function(data) {
     return data;
+  });
+}
+
+function test_simpleTwoPageDocumentWithEncryption() {
+  const doc = new jsPDF({
+    encryption: {
+      userPassword: "longpassword",
+      userPermissions: ["print", "copy"]
+    }
+  });
+  doc.text("Hello world!", 20, 20);
+  doc.text("This is client-side Javascript, pumping out a PDF.", 20, 20);
+  doc.addPage();
+  doc.text("Do you like that?", 20, 20);
+  doc.save("Test.pdf");
+}
+
+function test_addImageWithEncryption() {
+  const doc = new jsPDF({
+    encryption: {
+      userPassword: "password",
+      ownerPassword: "password"
+    }
+  });
+  doc.addImage({
+    imageData: "/image.png",
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100
   });
 }

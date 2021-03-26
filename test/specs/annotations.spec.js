@@ -55,4 +55,55 @@ describe("Module: Annotations", () => {
     });
     comparePdf(doc.output(), "freetext.pdf", "annotations");
   });
+  it("should draw a link on the text with link after add page", () => {
+    const doc = new jsPDF({
+      unit: "px",
+      format: [200, 300],
+      floatPrecision: 2
+    });
+
+    doc.textWithLink("Click me!", 10, 10, {
+      url: "https://parall.ax/"
+    });
+
+    doc.addPage("a4");
+
+    doc.text("New page with difference size", 10, 10);
+
+    comparePdf(doc.output(), "insertLinkAddPage.pdf", "annotations");
+  });
+  it("should align text link based on the align option", () => {
+    var doc = new jsPDF({
+      unit: "px",
+      format: [200, 300],
+      floatPrecision: 2
+    });
+
+    doc.textWithLink(
+      "Left aligned Link",
+      doc.internal.pageSize.getWidth() / 2,
+      10,
+      { align: "left", url: "https://www.google.com" }
+    );
+    doc.textWithLink(
+      "Center aligned Link",
+      doc.internal.pageSize.getWidth() / 2,
+      30,
+      { align: "center", url: "https://www.google.com" }
+    );
+    doc.textWithLink(
+      "Justify aligned Link",
+      doc.internal.pageSize.getWidth() / 2,
+      50,
+      { align: "justify", url: "https://www.google.com" }
+    );
+    doc.textWithLink(
+      "Right aligned Link",
+      doc.internal.pageSize.getWidth() / 2,
+      70,
+      { align: "right", url: "https://www.google.com" }
+    );
+
+    comparePdf(doc.output(), "textLinkWithAlignOptions.pdf", "annotations");
+  });
 });
